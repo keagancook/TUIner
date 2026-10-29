@@ -1,12 +1,12 @@
 # Security and privacy
 
-Tuiner is a local terminal application. It opens the selected microphone while
+TUIner is a local terminal application. It opens the selected microphone while
 in tuner mode and sends metronome clicks to the default audio output. It does not
 record audio to disk, upload audio, or contain application telemetry or a network
 server. The audio backend may use your system's configured audio service.
 
-On Linux, Tuiner optionally runs `wpctl` and `pactl` from your PATH to display the
-system input's name. Use a trusted PATH and do not run Tuiner as root.
+On Linux, TUIner optionally runs `wpctl` and `pactl` from your PATH to display the
+system input's name. Use a trusted PATH and do not run TUIner as root.
 
 Settings are stored under the operating system's user config directory in
 `tuiner/` (normally `~/.config/tuiner/` on Linux). Diagnostics are stored under the

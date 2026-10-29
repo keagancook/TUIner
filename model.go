@@ -229,7 +229,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.Update(message.Message)
 	case tuning.AudioReadErrorMsg:
 		if message.Err != nil {
-			log.Printf("tuiner: microphone read failed: %v", message.Err)
+			log.Printf("TUIner: microphone read failed: %v", message.Err)
 		}
 		m.TunerReadPending = false
 		m.AudioStarting = false

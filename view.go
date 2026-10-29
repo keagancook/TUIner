@@ -80,10 +80,10 @@ func renderHeader(m Model) string {
 	}
 	var line string
 	if m.WindowWidth < 64 {
-		line = fmt.Sprintf("TUINER/%s  [ %s ]", m.CurrentState, reference)
+		line = fmt.Sprintf("TUIner/%s  [ %s ]", m.CurrentState, reference)
 	} else {
 		line = lipgloss.JoinHorizontal(lipgloss.Center,
-			badge(m, "TUINER // "+string(m.CurrentState), cyan, surface),
+			badge(m, "TUIner // "+string(m.CurrentState), cyan, surface),
 			"  ",
 			badge(m, reference, surface, referenceColor),
 			"  ",

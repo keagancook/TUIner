@@ -61,19 +61,19 @@ func LoadOrWriteConfigFile(name string) ([]byte, error) {
 func LoadSettingsData() SettingsData {
 	var user SettingsData
 	if raw, err := LoadOrWriteConfigFile("custom_options.json"); err != nil {
-		log.Printf("tuiner: load custom tunings: %v", err)
+		log.Printf("TUIner: load custom tunings: %v", err)
 	} else if err := json.Unmarshal(raw, &user); err != nil {
-		log.Printf("tuiner: parse custom tunings: %v", err)
+		log.Printf("TUIner: parse custom tunings: %v", err)
 	}
 
 	var defaults SettingsData
 	raw, err := configFS.ReadFile("config/default_options.json")
 	if err != nil {
-		log.Printf("tuiner: load built-in tunings: %v", err)
+		log.Printf("TUIner: load built-in tunings: %v", err)
 		return user
 	}
 	if err := json.Unmarshal(raw, &defaults); err != nil {
-		log.Printf("tuiner: parse built-in tunings: %v", err)
+		log.Printf("TUIner: parse built-in tunings: %v", err)
 		return user
 	}
 
@@ -93,7 +93,7 @@ func LoadSettingsData() SettingsData {
 func LoadSettingsSelections(name string, data SettingsData) SettingsSelections {
 	raw, err := LoadOrWriteConfigFile(name)
 	if err != nil {
-		log.Printf("tuiner: load settings: %v", err)
+		log.Printf("TUIner: load settings: %v", err)
 		return SettingsSelections{}
 	}
 	var settings SettingsSelections
@@ -115,7 +115,7 @@ func LoadSettingsSelections(name string, data SettingsData) SettingsSelections {
 		HistorySize    int     `json:"history_size"`
 	}
 	if err := json.Unmarshal(raw, &legacy); err != nil {
-		log.Printf("tuiner: parse settings: %v", err)
+		log.Printf("TUIner: parse settings: %v", err)
 		return SettingsSelections{}
 	}
 	settings = SettingsSelections{
@@ -134,20 +134,20 @@ func LoadSettingsSelections(name string, data SettingsData) SettingsSelections {
 func StoreSettings(settings SettingsSelections, name string) {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		log.Printf("tuiner: locate config: %v", err)
+		log.Printf("TUIner: locate config: %v", err)
 		return
 	}
 	appDir := filepath.Join(configDir, "tuiner")
 	if err := os.MkdirAll(appDir, 0700); err != nil {
-		log.Printf("tuiner: create config directory: %v", err)
+		log.Printf("TUIner: create config directory: %v", err)
 		return
 	}
 	data, err := json.MarshalIndent(settings, "", "  ")
 	if err != nil {
-		log.Printf("tuiner: encode settings: %v", err)
+		log.Printf("TUIner: encode settings: %v", err)
 		return
 	}
 	if err := os.WriteFile(filepath.Join(appDir, name), data, 0600); err != nil {
-		log.Printf("tuiner: save settings: %v", err)
+		log.Printf("TUIner: save settings: %v", err)
 	}
 }

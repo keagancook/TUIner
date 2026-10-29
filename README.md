@@ -1,6 +1,6 @@
-# tuiner
+# TUIner
 
-tuiner is a keyboard-first terminal guitar tuner and metronome built with Go, Bubble Tea, Lip Gloss, PortAudio, and a YIN pitch detector.
+TUIner is a keyboard-first terminal guitar tuner and metronome built with Go, Bubble Tea, Lip Gloss, PortAudio, and a YIN pitch detector.
 
 ## Features
 
@@ -90,11 +90,11 @@ sudo apt-get install build-essential pkg-config portaudio19-dev libasound2-dev g
 
 ## Install and run
 
-Install `tuiner` into your user PATH:
+Install TUIner (command: `tuiner`) into your user PATH:
 
 ```bash
-git clone https://github.com/keagancook/tuiner.git
-cd tuiner
+git clone https://github.com/keagancook/TUIner.git
+cd TUIner
 GOBIN="$HOME/.local/bin" go install .
 tuiner
 ```

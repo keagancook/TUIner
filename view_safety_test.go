@@ -5,6 +5,15 @@ import (
 	"testing"
 )
 
+func TestHeaderUsesExactTUInerBranding(t *testing.T) {
+	for _, width := range []int{60, 120} {
+		m := Model{CurrentState: Listening, WindowWidth: width, ReferencePitch: 440}
+		if header := renderHeader(m); !strings.Contains(header, "TUIner") {
+			t.Fatalf("header at width %d does not use TUIner branding: %q", width, header)
+		}
+	}
+}
+
 func TestMicrophoneHeaderDoesNotClaimActiveWithoutStream(t *testing.T) {
 	m := Model{CurrentState: Listening, WindowWidth: 160, ReferencePitch: 440}
 	if header := renderHeader(m); !strings.Contains(header, "MIC:IDLE") {
