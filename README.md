@@ -1,129 +1,141 @@
-# tTune
+# tuiner
 
-![Cool banner :D](.github/extra/screenshots/banner.png?raw=true)
-
-tTune is a stylized, extendable, keyboard oriented guitar tuning app right in your terminal!
-
-> **Note:** tTune is still actively developed. Future releases may be incompatible with configurations of previous versions due to my lack of foresight and poor system design skills. If you cannot run the program after updating, please back up and delete your ~/.config/ttune directory and try running tTune again.
----
-
-## Showcase
-
-<div align="center">
-  <img src=".github/extra/screenshots/ttune_demo.gif?raw=true" /><br/>
-  <em>Tuning G string demo</em>
-</div>
-
-<br/>
-
-<div align="center">
-  <img src=".github/extra/screenshots/nord_example.png?raw=true" /><br/>
-  <em>Tuning view</em>
-</div>
-
-<br/>
-
-<div align="center">
-  <img src=".github/extra/screenshots/gruvbox_example.png?raw=true" /><br/>
-  <em>Settings view</em>
-</div>
+tuiner is a keyboard-first terminal guitar tuner and metronome built with Go, Bubble Tea, Lip Gloss, PortAudio, and a YIN pitch detector.
 
 ## Features
 
-- Pitch detection based on the [YIN algorithm](http://audition.ens.fr/adc/pdf/2002_JASA_YIN.pdf)
-- Modern terminal UI
-- Easily customizable settings
-- Batteries included
+- Prominent note, frequency, cents, confidence, RMS, and signal-quality readouts
+- Harmonic-aware low-string tracking with attack-transient confirmation, confidence gating, and median smoothing
+- Centered ±50-cent meter with explicit FLAT / IN TUNE / SHARP states
+- Live cents and signal sparklines
+- In-app audio-input picker; generic system defaults resolve to the active PipeWire/PulseAudio interface in telemetry
+- A4=440 Hz / A4=432 Hz one-key switching and custom 400–480 Hz references
+- Searchable built-in and user-defined tuning library
+- Guided string-by-string tuning with exact target frequencies
+- Separate metronome mode with 30–300 BPM, tap tempo, time signatures, accented downbeats, audible clicks, and a visual beat indicator
+- Responsive wide, medium, narrow, and tiny layouts
+- Unicode/ASCII and color/no-color fallbacks
+- Vim-style navigation and contextual key hints
+
+## Controls
+
+### Global
+
+| Key | Action |
+| --- | --- |
+| `1` | Tuner |
+| `2` / `m` | Metronome |
+| `t` | Tuning library |
+| `4` | Toggle A4 between 440 Hz and 432 Hz |
+| `r` | Enter a custom A4 reference |
+| `i` | Choose the audio input source |
+| `?` | Help overlay |
+| `Esc` | Cancel / back |
+| `q` / `Ctrl-C` | Quit |
+
+### Tuner
+
+| Key | Action |
+| --- | --- |
+| `j` / `k`, `h` / `l` | Move through strings |
+| `gg` / `G` | First / last string |
+
+### Tuning library
+
+| Key | Action |
+| --- | --- |
+| `j` / `k` | Move through tunings |
+| `h` / `Left` | Return without changing the tuning |
+| `l` / `Right` / `Enter` / `Space` | Select tuning and begin guided mode |
+| `gg` / `G` | First / last tuning |
+| `/` | Search tuning library |
+
+### Metronome
+
+| Key | Action |
+| --- | --- |
+| `h` / `l` | BPM −/+1 |
+| `j` / `k` | BPM −/+5 |
+| `gg` / `G` | 30 / 300 BPM |
+| `Enter` | Tap tempo |
+| `Space` | Start / stop |
+| `[` / `]` | Previous / next time signature |
+
+## Terminal fallbacks
+
+- Set `NO_COLOR=1` or run with `--no-color` to disable color.
+- Run with `--ascii` to force ASCII borders and meters.
+- `TERM=dumb` disables color and Unicode decoration.
+- A non-UTF-8 locale automatically selects ASCII meters and borders.
 
 ## Dependencies
 
-- Go `1.24`
-- Portaudio `19.7.0`
+- Go 1.25.5+ (older distribution packages may need an upgrade)
+- A C compiler (CGO must be enabled)
+- PortAudio 19
+- ALSA development headers on Linux
+- `pkg-config`
 
-### Arch Linux
-
-```bash
-sudo pacman -S pkgconf portaudio go
-```
-
-### Debian
+Arch Linux:
 
 ```bash
-sudo apt-get install pkg-config portaudio19-dev golang-go
+sudo pacman -S base-devel pkgconf portaudio alsa-lib go
 ```
 
-## Installation
-
-### Arch Linux
+Debian/Ubuntu:
 
 ```bash
-yay -S ttune
+sudo apt-get install build-essential pkg-config portaudio19-dev libasound2-dev golang-go
 ```
 
-### Build From Source
+## Install and run
+
+Install `tuiner` into your user PATH:
 
 ```bash
-# get dependencies first
-git clone https://github.com/SteveMCWin/ttune.git
-cd ttune
-go build
+git clone https://github.com/keagancook/tuiner.git
+cd tuiner
+GOBIN="$HOME/.local/bin" go install .
+tuiner
 ```
 
-## Customization
+For a repository-local build instead:
 
-You can add your own options to `custom_options.json` as long as you follow the existing format. You can also override existing options by defining a custom option with the same name (the border styles cannot be overriden).
+```bash
+go build -o tuiner .
+./tuiner
+```
 
-> **Note:** If something breaks, back up and delete the edited files or the entire `~/.config/ttune/` directory - the defaults will be regenerated on the next run.
+## Custom tunings
 
----
+Add entries to `~/.config/tuiner/custom_options.json` using the existing format:
 
-### Ascii Art
+```json
+{
+  "tunings": [
+    {
+      "name": "My Tuning",
+      "notes": ["D2", "A2", "D3", "G3", "A3", "D4"]
+    }
+  ]
+}
+```
 
-Place your own ASCII art files in `~/.config/ttune/art/`. To display a tuning alongside your art, insert `%n%` where you'd like the n-th note to appear ((see `~/.config/ttune/art/utf_guitar` for reference)).
+Notes may use sharps or flats and must include an octave. User entries are merged with the built-in tuning library and are searchable by name.
 
-> **Recommended size:** no wider than **24 characters** and no taller than **20 lines**. Oversized art will not render properly.
+## Verification
 
----
+```bash
+go test -race ./...
+go vet ./...
+go mod verify
+```
 
-### Border Style
+CI also builds the app and checks Go vulnerability advisories. System PortAudio
+and ALSA libraries are provided by your package manager and need to be kept
+updated separately. Physical device-unplug behavior and non-Linux platforms have
+not been verified by the automated tests.
 
-Not extensible at the moment `:^/`
+See [SECURITY.md](SECURITY.md) for local microphone, diagnostic-log, and vulnerability-reporting details.
 
-Want this to be moddable? [Open an issue](https://github.com/SteveMCWin/ttune/issues).
-
----
-
-### Color Theme
-
-To add a new color theme, open `~/.config/ttune/custom_options.json` and find the list of color themes. Add an entry with:
-
-| Field       | Description              |
-| ----------- | ------------------------ |
-| `name`      | Name of the color theme  |
-| `primary`   | Hex color for borders    |
-| `secondary` | Hex color for text       |
-| `tertiary`  | Hex color for selections |
-
-> **Note:** Your terminal's background color will not be affected.
-
----
-
-### Displayed Tuning
-
-To add a new tuning, open `~/.config/ttune/custom_options.json` and find the list of tunings. Add an entry with:
-
-| Field   | Description               |
-| ------- | ------------------------- |
-| `name`  | Name of the tuning        |
-| `notes` | List of notes it contains |
-
-> **Note:** Each note must be **exactly 3 characters long**. Pad shorter note names with spaces (e.g., `"E4 "`).
-
-## Planned Features
-
-- [x] Frequency detection
-- [x] Customizable settings
-- [x] Separate user settings
-- [x] Scrollable settings options
-- [ ] Options for frequency detection
-- [ ] Improve pitch detection
+Original project by [SteveMCWin](https://github.com/SteveMCWin/ttune), licensed under MIT.

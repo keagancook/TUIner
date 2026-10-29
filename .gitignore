@@ -1,3 +1,13 @@
-ttune
-debug.log
+/tuiner
+/tuiner.exe
+/ttune
+*.log
 *.tar.gz
+*.test
+coverage.out
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store

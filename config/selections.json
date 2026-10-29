@@ -5,10 +5,10 @@
   "selected_theme": "Nord",
   "buffer_length": 8192,
   "sample_rate": 44100,
-  "min_frequency": 70,
+  "min_frequency": 40,
   "max_frequency": 1500,
   "amplitude_treshold": 0.01,
   "yin_min_treshold": 0.10,
-  "yin_max_treshold": 0.85,
+  "yin_max_treshold": 0.35,
   "history_size": 5
 }

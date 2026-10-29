@@ -1,61 +1,101 @@
 package main
 
 import (
+	"errors"
+	"flag"
 	"log"
 	"os"
 	"path/filepath"
-	"syscall"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/gordonklaus/portaudio"
+	"tuiner/internal/nativeaudio"
 )
 
 func logFilePath() string {
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
-		return "debug.log" // fallback
+		return "debug.log"
 	}
-	appCache := filepath.Join(cacheDir, "ttune")
-	_ = os.MkdirAll(appCache, 0755)
+	appCache := filepath.Join(cacheDir, "tuiner")
+	_ = os.MkdirAll(appCache, 0700)
 	return filepath.Join(appCache, "debug.log")
 }
 
-func main() {
-
-	f, err := tea.LogToFile(logFilePath(), "debug")
-	if err != nil {
-		log.Fatalf("failed setting the debug log file: %v", err)
-	}
-	defer func() { _ = f.Close() }()
-	// should check for commandline args
-	m := NewModel()
-
-	log.Println()
-	log.Println("~~~~~~~~~PROGRAM START~~~~~~~~~")
-	log.Println()
-
-	// Suppress ALSA warnings during cleanup by redirecting stderr
-	oldStderr, _ := syscall.Dup(int(os.Stderr.Fd()))
-	devNull, _ := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
-	_ = syscall.Dup2(int(devNull.Fd()), int(os.Stderr.Fd()))
-
-	err = portaudio.Initialize()
-	if err != nil {
-		log.Fatalf("Portaudio couldn't initialized.")
-	}
-	defer func() {
-		err = portaudio.Terminate()
-		if err != nil {
-			log.Fatalf("Portaudio couldn't terminated.")
-		}
-		// Restore stderr
-		_ = syscall.Dup2(oldStderr, int(os.Stderr.Fd()))
-		_ = syscall.Close(oldStderr)
-		_ = devNull.Close()
+// cleanupWithin bounds process shutdown even if a native audio driver stalls.
+// Callers must exit after a timeout, since the native call may still be running.
+func cleanupWithin(timeout time.Duration, cleanup func()) bool {
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		cleanup()
 	}()
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+	select {
+	case <-done:
+		return true
+	case <-timer.C:
+		return false
+	}
+}
 
-	p := tea.NewProgram(m)
-	if _, err := p.Run(); err != nil {
-		log.Fatal("Unable to run tui:", err)
+// shutdownNativeAudio must run inside the process cleanup deadline. Terminate
+// is unreachable until both admission barriers have drained, and shares native
+// ownership with all input/output calls. A timeout exits rather than bypassing
+// either barrier or terminating underneath a running operation.
+func shutdownNativeAudio(input, output, terminate func() error) error {
+	inputErr := input()
+	outputErr := output()
+	nativeaudio.Operations.Lock()
+	defer nativeaudio.Operations.Unlock()
+	return errors.Join(inputErr, outputErr, terminate())
+}
+
+func main() {
+	forceASCII := flag.Bool("ascii", false, "use ASCII borders and meters")
+	noColor := flag.Bool("no-color", false, "disable terminal colors")
+	flag.Parse()
+
+	logFile, err := tea.LogToFile(logFilePath(), "debug")
+	if err != nil {
+		log.Fatalf("open debug log: %v", err)
+	}
+	defer func() { _ = logFile.Close() }()
+
+	silenceHostAudioDiagnostics()
+	if err := portaudio.Initialize(); err != nil {
+		restoreHostAudioDiagnostics()
+		log.Fatalf("initialize PortAudio: %v", err)
+	}
+
+	model := NewModel()
+	if *forceASCII {
+		model.Unicode = false
+	}
+	if *noColor {
+		model.Color = false
+	}
+
+	program := tea.NewProgram(model)
+	finalModel, err := program.Run()
+	final, ok := finalModel.(Model)
+	if !ok {
+		final = model
+	}
+	if final.AudioCoordinator != nil {
+		final.AudioCoordinator.Next()
+	}
+	if !cleanupWithin(2*time.Second, func() {
+		if err := shutdownNativeAudio(final.PitchDetector.ShutdownAudio, final.MetronomeEngine.Close, portaudio.Terminate); err != nil {
+			log.Printf("audio shutdown: %v", err)
+		}
+		restoreHostAudioDiagnostics()
+	}) {
+		log.Print("audio shutdown timed out; exiting without waiting for the driver")
+	}
+	if err != nil {
+		log.Printf("run TUI: %v", err)
 	}
 }
