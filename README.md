@@ -1,20 +1,12 @@
 # TUIner
 
-TUIner is a keyboard-first terminal guitar tuner and metronome built with Go, Bubble Tea, Lip Gloss, PortAudio, and a YIN pitch detector.
+TUIner is a keyboard-first terminal guitar tuner and metronome built with Go, Bubble Tea, Lip Gloss, PortAudio, and a YIN pitch detector. This was VIBECODED.
 
 ## Features
 
-- Prominent note, frequency, cents, confidence, RMS, and signal-quality readouts
-- Harmonic-aware low-string tracking with attack-transient confirmation, confidence gating, and median smoothing
-- Centered ±50-cent meter with explicit FLAT / IN TUNE / SHARP states
-- Live cents and signal sparklines
-- In-app audio-input picker; generic system defaults resolve to the active PipeWire/PulseAudio interface in telemetry
 - A4=440 Hz / A4=432 Hz one-key switching and custom 400–480 Hz references
 - Searchable built-in and user-defined tuning library
-- Guided string-by-string tuning with exact target frequencies
-- Separate metronome mode with 30–300 BPM, tap tempo, time signatures, accented downbeats, audible clicks, and a visual beat indicator
-- Responsive wide, medium, narrow, and tiny layouts
-- Unicode/ASCII and color/no-color fallbacks
+- metronome mode with tap tempo, time signatures, and a visual beat indicator
 - Vim-style navigation and contextual key hints
 
 ## Controls
@@ -90,25 +82,25 @@ sudo apt-get install build-essential pkg-config portaudio19-dev libasound2-dev g
 
 ## Install and run
 
-Install TUIner (command: `tuiner`) into your user PATH:
+Install `TUIner` into your user PATH:
 
 ```bash
 git clone https://github.com/keagancook/TUIner.git
 cd TUIner
 GOBIN="$HOME/.local/bin" go install .
-tuiner
+TUIner
 ```
 
 For a repository-local build instead:
 
 ```bash
-go build -o tuiner .
-./tuiner
+go build -o TUIner .
+./TUIner
 ```
 
 ## Custom tunings
 
-Add entries to `~/.config/tuiner/custom_options.json` using the existing format:
+Add entries to `~/.config/TUIner/custom_options.json` using the existing format:
 
 ```json
 {
