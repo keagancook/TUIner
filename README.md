@@ -2,6 +2,8 @@
 
 TUIner is a keyboard-first terminal guitar tuner and metronome built with Go, Bubble Tea, Lip Gloss, PortAudio, and a YIN pitch detector. This was VIBECODED.
 
+![TUIner showing the tuner, cents meter, and audio-input telemetry](.github/extra/screenshots/tuiner.png)
+
 ## Features
 
 - A4=440 Hz / A4=432 Hz one-key switching and custom 400–480 Hz references
